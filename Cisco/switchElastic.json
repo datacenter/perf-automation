@@ -1,0 +1,1 @@
+{"es_url": "http://172.25.187.223:9200/", "dfsio_wait": "5", "switch_config": {"username": "admin,admin", "password": "cisco123,cisco123", "type": "Lacrosse,arista", "mgmtIp": "172.25.187.219,172.25.187.201"}, "monitoring_interval": "-1", "dynamic_monitor": 0, "polling_interval": "30", "neighbor_filter": "*"}

@@ -1,30 +1,18 @@
-# perf-automation
-These are scripts developed to collect the performance metrics  while running benchmark tests.
-
-AnsiblePlaybooks. This consists of ansible scripts for cleanup and prepare nodes before Hadoop installation
-
-Scripts for initialization of various counters before starting test and metric collection
-
-Scripts for collection of metrics from switches and push these metrics to elastic search.
-
-Scripts to start and stop Hadoop jobs and repeat Hadoop jobs mutliple time.
-
-
 Description -
    The codebase provides the tool utility for,
    1. switch interface, server netstat and switch buffer details while specified hadoop job is running.
    2. switch interface and nserver netstat parameter polling every n second for given time duration.
 
-## Pre-requsites -
+Pre-requsites -
    1. install pip
    2. install paramiko
    3. ssh is running on target servers which are to be monitor. i.e. ssh from VM running utility to monitoring servers is working. 
 
-## Configuration Files -
+Configuration Files -
    1. switchElastic.json - provide the details for switches to be monitor.
    2. hosts - list of compute nodes that are to be monitored.
 
-## Driver Scripts - 
+Driver Scripts - 
    1. run.sh - for hadoop job based monitoring.
       It captures the statistics and stores it to the elastic search.
    2. monitor.sh - monitoring the switch and server for given time duration polling every n second.

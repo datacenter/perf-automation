@@ -1,0 +1,19 @@
+- hosts: allnodes
+  gather_facts: true
+  sudo: true
+  tasks:
+    
+    - name: Conditions
+      command: echo "hello"
+      register:  hello
+
+    - name: Checking Process is running or not  
+      shell: ps -face | grep mapr | awk '{ if($10 != "--color=auto") print $2 }'
+      register: pid_available
+
+    - name: Conditions
+      command: echo "HELLOO"
+      when: pid_available.stdout
+
+    - debug: msg="{{pid_available.stdout}}"
+      

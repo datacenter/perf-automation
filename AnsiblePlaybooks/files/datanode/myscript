@@ -1,0 +1,13 @@
+# Enable ntp start on boot time
+sudo service ntp stop
+sudo ntpd -gq
+sudo service ntp start
+
+#Setup lldp
+#apt-get install lldpd
+#ipkill -f lldp
+#lldpd -c -I eth1
+
+# Setup default route
+sudo ip route del default
+sudo ip route add default via 172.25.187.1

@@ -1,0 +1,192 @@
+#Pre:pare All nodes
+- hosts: allnodes
+  gather_facts: true
+  sudo: true
+  tasks:
+    - name: Check if all the nodes are reachable
+      sudo: true
+      ping:
+
+    # Setup failsafe timer ( for quick bootup )
+    - name: Setup failsafe timer ( for quick bootup )
+      sudo: true
+      copy: src=./files/failsafe.conf dest=/etc/init/failsafe.conf
+
+    # Update cluster node hostnames
+    - name: Update cluster node hostnames
+      sudo: true
+      copy: src=./files/hosts dest=/etc/hosts
+
+    # Update the mapr software repository
+    - name: Update sources.list
+      sudo: true
+      copy: src=./files/sources.list dest=/etc/apt/sources.list
+
+    - name: Update DNS Server Details
+      sudo: true
+      copy: src=./files/resolv.conf dest=/etc/resolv.conf
+
+    - name: Perform apt-get update
+      sudo: true
+      apt: update_cache=yes
+
+    # Install NTP service on all nodes
+    - name: Install NTP daemon
+      sudo: true
+      apt: pkg=ntp state=present force=yes
+
+    # Install NTP service on all nodes
+    - name: Install NTP daemon
+      sudo: true
+      shell: apt-get install ntp-doc libopts25 ntp -y
+
+    # Must install JDK 1.7 or higher.
+    - name: Update python-software-properties 
+      sudo: true
+      apt: pkg=python-software-properties state=present
+
+    - name: Fix to correct dpkg itself
+      sudo: true
+      shell: dpkg --configure -a
+
+    # Syslog must be enabled on each node to preserve logs regarding killed processes or failed jobs.
+    - name: Install libssl-dev service
+      sudo: true
+      apt: pkg=libssl-dev state=present
+
+    - name: Install rsyslog-gnutls service
+      sudo: true
+      apt: pkg=rsyslog-gnutls state=present
+
+    - name: Ensure rsyslog service is running
+      sudo: true
+      service: name=rsyslog state=running
+
+    #Node pre-requisites
+    # Ensure default mask for root user is 0022 - /etc/.profile or /etc/.cshrc or /etc/.login
+    - name: Ensure default mask for root user is 022
+      sudo: true
+      command: echo "umask 022" >> /etc/.profile
+
+    # MapR does not recommend using overcommit 
+    - name: Update file /etc/sysctl.conf 
+      sudo: true
+      shell: echo "vm.overcommit_memory=0" >> /etc/sysctl.conf
+
+    - name: Update configuration 
+      sudo: true
+      shell: sysctl -p
+
+    # Configure TCP retries 
+    - name: Update file /etc/sysctl.conf 
+      sudo: true
+      shell: echo "net.ipv4.tcp_retries2=5" >> /etc/sysctl.conf
+
+    - name: Update TCP Retries Configuration 
+      sudo: true
+      shell: sysctl -p
+
+    # MapR recommends disabling the Transparent Huge Pages (THP) feature in the Linux kernel
+    - name: Disabling the Transparent Huge Pages (THP) feature
+      sudo: true
+      shell: echo "never" > /sys/kernel/mm/transparent_hugepage/defrag
+
+    # Configure ulimit ( ulimit -n ) to 64000
+    - name: Configure ulimit
+      sudo: true
+      shell: ulimit -n 64000
+
+# Prepare Namenodes
+- hosts: namenodes
+  gather_facts: true
+  tasks:
+    #- name: Generate authorized_key file
+    #  sudo: true
+    #  shell: ssh-keygen 
+
+    - name: Fetch authorized_key file
+      sudo: true
+      fetch: src=/root/.ssh/id_rsa.pub dest=./repo/authorized_keys_new flat=yes
+
+    - name: Setup Start Script
+      sudo: true
+      copy: src=./files/namenode/myscript dest=/etc/init.d/myscript
+
+    - name: Ensure myscript boot-enabled and executed
+      sudo: true
+      shell: update-rc.d myscript defaults
+
+    - name: Setup NTP daemon config file
+      sudo: true
+      copy: src=./files/namenode/ntp.conf dest=/etc/ntp.conf
+
+    - name: Ensure NTP daemon restart and autostart
+      sudo: true
+      service: name=ntp enabled=yes state=restarted
+
+    - name: Install VNCServer
+      sudo: true
+      action: apt pkg={{item}} state=installed
+      with_items:
+       - xfce4 
+       - xfce4-goodies 
+       - tightvncserver 
+
+    #- name: Ensure vncserver has execute permissions 
+    #  sudo: true
+    #  shell: chmod +x /etc/init.d/vncserver
+    #  ignore_errors: yes
+
+    - name: Ensure vncserver running
+      sudo: true
+      #shell: /etc/init.d/vncserver :1
+      shell: vncserver :1
+      ignore_errors: yes
+
+# Prepare Datanodes
+- hosts: datanodes
+  gather_facts: true
+  tasks:
+
+    #- name: Setup NTP daemon config
+    #  sudo: true
+    #  copy: src=./files/datanode/ntp.conf dest=/etc/ntp.conf
+
+    #- name: Ensure NTP daemon restart and autostart
+    #  sudo: true
+    #  service: name=ntp enabled=yes state=restarted
+
+    #- name: Ensure NTP clients syncs with timeserver
+    #  sudo: true
+    #  shell: ntpdate -u 192.168.101.7
+
+    - name: Setup Start Script
+      sudo: true
+      copy: src=./files/datanode/myscript dest=/etc/init.d/myscript
+
+    - name: Ensure myscript boot-enabled and executed
+      sudo: true
+      shell: update-rc.d myscript defaults
+
+
+    #- name: Send authorized_key file to newnode
+    #  sudo: true
+    #  copy: src=./repo/authorized_keys_new dest=/root/.ssh/authorized_keys_new
+
+    # Enable ssh key authorization 
+    - name: Add authorized_key to existing file
+      sudo: true
+      authorized_key: user=root key="{{ lookup('file', './repo/authorized_keys_new') }}"
+
+
+- hosts: allnodes 
+  gather_facts: true
+  tasks:
+    - name: Add authorized_key to existing file
+      sudo: true
+      shell: echo "Hello New Node"
+    
+    # Reboot the system
+    #- name: Rebooting the system
+    #  sudo: true
+    #  shell: reboot

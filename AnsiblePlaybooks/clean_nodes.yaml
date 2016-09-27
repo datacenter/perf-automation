@@ -1,0 +1,24 @@
+- hosts: allnodes
+  gather_facts: true
+  sudo: true
+  tasks:
+
+    - name: Checking Rechability
+      ping:
+
+    # Kill all the mapr related processs
+    - name: Killing all the mapr processes
+      shell: ps -face | grep mapr | awk '{ if($10 != "--color=auto") print $2 }' | xargs kill -9
+      ignore_errors: yes
+
+    # Remove all the mapr packages
+    - name: Uninstalling mapr packages
+      shell: dpkg --list | grep mapr | awk '{print $2}' | xargs apt-get purge -y
+
+    # Remove all the mapr directory
+    - name: Removing mapr directories
+      shell: rm -rf /opt/mapr/
+
+    # Copy all /etc/hosts file to all the nodes
+    - name: Copying /etc/hosts file
+      copy: src=./files/hosts dest=/etc/hosts

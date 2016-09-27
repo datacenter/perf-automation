@@ -1,0 +1,10 @@
+{
+  "switch_config": {
+    "mgmtIp": "172.25.187.219,172.25.187.201",
+    "username": "admin,admin",
+    "password": "cisco123,cisco123",
+    "type":"Lacrosse,arista"
+  },
+  "polling_interval": 30,
+  "monitor_duration": -1,
+}

@@ -1,0 +1,15 @@
+- hosts: allnodes
+  gather_facts: true
+  sudo: true
+  tasks:
+
+    # Copy all /etc/hosts file to all the nodes
+    - name: Copying /etc/hosts file
+      copy: src=./files/apt.conf dest=/etc/apt/apt.conf
+
+    - name: Copying /etc/hosts file
+      copy: src=./files/apt.conf dest=/etc/apt/apt.conf.d/apt.conf
+
+ 
+
+

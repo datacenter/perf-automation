@@ -1,0 +1,13 @@
+# Setup Default Routes
+sudo ip route del default
+sudo ip route add default via 172.25.187.1
+
+# Add vncserver startup for the namenode
+/usr/bin/vncserver -geometry 1280x1024 -depth 24
+#vncserver :1
+
+# lldp enable
+#apt-get install lldpd
+#pkill -f lldp
+#lldpd -c -I eth1
+
